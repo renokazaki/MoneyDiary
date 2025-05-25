@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  clerk_id      String   @unique
+  display_name  String
+  profile_image String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // リレーション
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Transaction {
+  id        String          @id @default(cuid())
+  user      User            @relation(fields: [user_clerk_id], references: [clerk_id])
+  user_clerk_id String
+  type      TransactionType
+  amount    Float
+  category  String?
+  note      String?
+  created_at DateTime        @default(now())
+  updated_at DateTime        @updatedAt
+}
+
+
+
+
+
