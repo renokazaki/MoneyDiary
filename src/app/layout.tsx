@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="ja">
-        <body>
+        <body className="h-screen w-full">
           <header>
             <Header />
           </header>
