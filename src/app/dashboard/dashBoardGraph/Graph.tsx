@@ -59,56 +59,70 @@ export function TransactionGraph({
       );
     }
 
+    // 支出のみをフィルタリング
+    const expenseTransactions = filteredTransactions.filter(
+      (item) => item.type === TransactionType.EXPENSE
+    );
+
     // データがなければ空の配列を返す
-    if (filteredTransactions.length === 0) {
+    if (expenseTransactions.length === 0) {
       return [];
     }
 
-    // 日付ごとにグループ化して金額を集約
-    const groupedData: { [key: string]: { income: number; expense: number } } = {};
+    // 日付ごとにカテゴリ別で集約
+    const groupedData: { [key: string]: { [category: string]: number } } = {};
 
-    filteredTransactions.forEach((item) => {
+    expenseTransactions.forEach((item) => {
       const dateKey = new Date(item.created_at).toLocaleDateString("ja-JP", {
         month: "numeric",
         day: "numeric",
       });
+      const category = item.category || "その他";
 
-      // 同じ日付のデータがすでに存在しない場合は初期化
       if (!groupedData[dateKey]) {
-        groupedData[dateKey] = { income: 0, expense: 0 };
+        groupedData[dateKey] = {};
       }
 
-      // 収入と支出を分けて集計
-      if (item.type === TransactionType.INCOME) {
-        groupedData[dateKey].income += item.amount;
-      } else {
-        groupedData[dateKey].expense += item.amount;
+      if (!groupedData[dateKey][category]) {
+        groupedData[dateKey][category] = 0;
       }
+
+      groupedData[dateKey][category] += item.amount;
     });
 
+    // すべてのカテゴリを取得
+    const allCategories = Array.from(
+      new Set(
+        expenseTransactions.map((item) => item.category || "その他")
+      )
+    );
+
     // グループ化されたデータを配列に変換
-    return Object.entries(groupedData).map(([date, amounts]) => ({
-      date,
-      収入: amounts.income,
-      支出: amounts.expense,
-      差額: amounts.income - amounts.expense,
-    }));
+    return Object.entries(groupedData).map(([date, categories]) => {
+      const result: { date: number; [category: string]: number } = { date: Number(date) };
+      allCategories.forEach((category) => {
+        result[category] = categories[category] || 0;
+      });
+      return result;
+    });
   };
 
   const chartData = processData();
+  const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
 
   return (
     <div className="space-y-4">
       {/* 期間選択タブ */}
       <div className="flex justify-between items-center">
-        <h3 className="text-gray-900 font-medium">収支グラフ</h3>
+        <h3 className="text-gray-900 font-medium">カテゴリ別支出グラフ</h3>
         <Tabs
           value={period}
           onValueChange={(value) => {
             if (value === "week" || value === "month" || value === "year") {
               setPeriod(value);
             }
-          }}        >
+          }}
+        >
           <TabsList className="bg-gray-100 border border-gray-200 rounded-full">
             <TabsTrigger
               value="week"
@@ -140,7 +154,8 @@ export function TransactionGraph({
             if (value === "area" || value === "bar") {
               setChartType(value);
             }
-          }}        >
+          }}
+        >
           <TabsList className="bg-gray-100 border border-gray-200 rounded-full">
             <TabsTrigger
               value="area"
@@ -178,22 +193,20 @@ export function TransactionGraph({
                   name
                 ]}
               />
-              <Area
-                type="monotone"
-                dataKey="収入"
-                stackId="1"
-                stroke="#10b981"
-                fill="#10b981"
-                fillOpacity={0.3}
-              />
-              <Area
-                type="monotone"
-                dataKey="支出"
-                stackId="1"
-                stroke="#ef4444"
-                fill="#ef4444"
-                fillOpacity={0.3}
-              />
+              {chartData.length > 0 && 
+                Object.keys(chartData[0])
+                  .filter(key => key !== 'date')
+                  .map((category, index) => (
+                    <Area
+                      key={category}
+                      type="monotone"
+                      dataKey={category}
+                      stroke={colors[index % colors.length]}
+                      fill={colors[index % colors.length]}
+                      fillOpacity={0.3}
+                    />
+                  ))
+              }
             </AreaChart>
           ) : (
             <BarChart data={chartData}>
@@ -212,8 +225,18 @@ export function TransactionGraph({
                   name
                 ]}
               />
-              <Bar dataKey="収入" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="支出" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              {chartData.length > 0 && 
+                Object.keys(chartData[0])
+                  .filter(key => key !== 'date')
+                  .map((category, index) => (
+                    <Bar 
+                      key={category}
+                      dataKey={category} 
+                      fill={colors[index % colors.length]} 
+                      radius={[4, 4, 0, 0]} 
+                    />
+                  ))
+              }
             </BarChart>
           )}
         </ResponsiveContainer>
@@ -222,20 +245,25 @@ export function TransactionGraph({
       {/* データがない場合のメッセージ */}
       {chartData.length === 0 && (
         <div className="flex justify-center items-center h-20 text-gray-400">
-          選択した期間のデータがありません
+          選択した期間の支出データがありません
         </div>
       )}
 
       {/* 凡例 */}
-      <div className="flex items-center justify-center space-x-4 text-sm">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-sm bg-green-500"></div>
-          <span className="text-gray-600">収入</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 rounded-sm bg-red-500"></div>
-          <span className="text-gray-600">支出</span>
-        </div>
+      <div className="flex items-center justify-center flex-wrap gap-4 text-sm">
+        {chartData.length > 0 && 
+          Object.keys(chartData[0])
+            .filter(key => key !== 'date')
+            .map((category, index) => (
+              <div key={category} className="flex items-center space-x-2">
+                <div 
+                  className="w-3 h-3 rounded-sm" 
+                  style={{ backgroundColor: colors[index % colors.length] }}
+                ></div>
+                <span className="text-gray-600">{category}</span>
+              </div>
+            ))
+        }
       </div>
     </div>
   );
