@@ -72,5 +72,22 @@ export async function POST(req: Request) {
     }
   }
 
+  if (evt.type === 'user.deleted') {
+    try {
+        // ユーザーを削除
+        await prisma.user.delete({
+          where: {
+            clerk_id: evt.data.id,
+          },
+        });
+      
+      return new Response('User deleted successfully', { status: 200 });
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      return new Response('Error: Database operation failed', { status: 500 });
+    }
+  }
+
+ 
   return new Response('Webhook received', { status: 200 });
 }
