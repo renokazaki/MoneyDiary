@@ -28,3 +28,33 @@ export async function GET() {
     );
   }
 }
+
+export async function POST(req: Request) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { type, amount, category, note, created_at } = await req.json();
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        type,
+        amount,
+        category,
+        note,
+        created_at,
+        user_clerk_id: userId,
+      },
+    });
+    return NextResponse.json(transaction);
+  } catch (error) {
+    console.error("Error creating transaction:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}

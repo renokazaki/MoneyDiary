@@ -34,8 +34,9 @@ const CalenderPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
-        <div className="flex justify-center items-center h-64">
+      <div className="h-screen container mx-auto p-4 flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <div className="text-gray-500">読み込み中...</div>
         </div>
       </div>
@@ -44,7 +45,7 @@ const CalenderPage = () => {
 
   if (error) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="h-screen container mx-auto p-4 flex justify-center items-center">
         <div className="flex justify-center items-center h-64">
           <div className="text-red-500">エラー: {error}</div>
         </div>

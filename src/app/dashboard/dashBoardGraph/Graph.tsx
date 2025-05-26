@@ -92,14 +92,14 @@ export function TransactionGraph({
 
     // すべてのカテゴリを取得
     const allCategories = Array.from(
-      new Set(
-        expenseTransactions.map((item) => item.category || "その他")
-      )
+      new Set(expenseTransactions.map((item) => item.category || "その他"))
     );
 
     // グループ化されたデータを配列に変換
     return Object.entries(groupedData).map(([date, categories]) => {
-      const result: { date: number; [category: string]: number } = { date: Number(date) };
+      const result: { date: number; [category: string]: number } = {
+        date: Number(date),
+      };
       allCategories.forEach((category) => {
         result[category] = categories[category] || 0;
       });
@@ -108,7 +108,16 @@ export function TransactionGraph({
   };
 
   const chartData = processData();
-  const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+  const colors = [
+    "#ef4444",
+    "#3b82f6",
+    "#10b981",
+    "#f59e0b",
+    "#8b5cf6",
+    "#06b6d4",
+    "#ec4899",
+    "#84cc16",
+  ];
 
   return (
     <div className="space-y-4">
@@ -190,12 +199,12 @@ export function TransactionGraph({
                 }}
                 formatter={(value, name) => [
                   `¥${Number(value).toLocaleString()}`,
-                  name
+                  name,
                 ]}
               />
-              {chartData.length > 0 && 
+              {chartData.length > 0 &&
                 Object.keys(chartData[0])
-                  .filter(key => key !== 'date')
+                  .filter((key) => key !== "date")
                   .map((category, index) => (
                     <Area
                       key={category}
@@ -205,8 +214,7 @@ export function TransactionGraph({
                       fill={colors[index % colors.length]}
                       fillOpacity={0.3}
                     />
-                  ))
-              }
+                  ))}
             </AreaChart>
           ) : (
             <BarChart data={chartData}>
@@ -222,21 +230,20 @@ export function TransactionGraph({
                 }}
                 formatter={(value, name) => [
                   `¥${Number(value).toLocaleString()}`,
-                  name
+                  name,
                 ]}
               />
-              {chartData.length > 0 && 
+              {chartData.length > 0 &&
                 Object.keys(chartData[0])
-                  .filter(key => key !== 'date')
+                  .filter((key) => key !== "date")
                   .map((category, index) => (
-                    <Bar 
+                    <Bar
                       key={category}
-                      dataKey={category} 
-                      fill={colors[index % colors.length]} 
-                      radius={[4, 4, 0, 0]} 
+                      dataKey={category}
+                      fill={colors[index % colors.length]}
+                      radius={[4, 4, 0, 0]}
                     />
-                  ))
-              }
+                  ))}
             </BarChart>
           )}
         </ResponsiveContainer>
@@ -251,19 +258,18 @@ export function TransactionGraph({
 
       {/* 凡例 */}
       <div className="flex items-center justify-center flex-wrap gap-4 text-sm">
-        {chartData.length > 0 && 
+        {chartData.length > 0 &&
           Object.keys(chartData[0])
-            .filter(key => key !== 'date')
+            .filter((key) => key !== "date")
             .map((category, index) => (
               <div key={category} className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-sm" 
+                <div
+                  className="w-3 h-3 rounded-sm"
                   style={{ backgroundColor: colors[index % colors.length] }}
                 ></div>
                 <span className="text-gray-600">{category}</span>
               </div>
-            ))
-        }
+            ))}
       </div>
     </div>
   );
