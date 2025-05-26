@@ -24,6 +24,7 @@ interface CalenderModalProps {
   setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
   selectedDateTransactions: Transaction[];
   selectedDate: Date | null;
+  onTransactionChange: () => void;
 }
 
 const CalenderModal = ({
@@ -72,7 +73,7 @@ const CalenderModal = ({
       if (response.ok) {
         resetForm();
         window.location.reload(); // ページ全体をリロード
-      }
+    }
     } catch (error) {
       console.error("保存に失敗しました", error);
     } finally {
