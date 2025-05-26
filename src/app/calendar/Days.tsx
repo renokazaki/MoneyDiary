@@ -7,15 +7,17 @@ import { generateCalendarDays } from "@/lib/calender/calender";
 
 const Days = ({
   transactions,
+  currentDate,
 }: {
   transactions: Transaction[];
+  currentDate: Date;
 }) => {
   const [selectedDateTransactions, setSelectedDateTransactions] = useState<
     Transaction[]
   >([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const calendarDays = generateCalendarDays(new Date());
+  const calendarDays = generateCalendarDays(currentDate);
 
   const formatDate = (date: Date) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
@@ -26,13 +28,14 @@ const Days = ({
 
   const handleDayClick = (day: Date) => {
     const dailyTransactions = transactions.filter(
-      (t) => t.created_at.toISOString().split("T")[0] === formatDate(day)
+      (t) => new Date(t.created_at).toISOString().split("T")[0] === formatDate(day)
     );
     setSelectedDateTransactions(dailyTransactions);
     setIsDialogOpen(true); // ダイアログを開く
   };
 
   return (
+    <>
     <CardContent>
       <div>
         <div className="grid grid-cols-7 gap-2 text-center">
@@ -43,7 +46,7 @@ const Days = ({
           ))}
           {calendarDays.map((day, index) => {
             const dailyTransactions = day
-              ? transactions.filter((t) => t.created_at.toISOString().split("T")[0] === formatDate(day))
+              ? transactions.filter((t) => new Date(t.created_at).toISOString().split("T")[0] === formatDate(day))
               : [];
 
             const incomeAmount = dailyTransactions.reduce(
@@ -91,6 +94,7 @@ const Days = ({
         />
       </div>
     </CardContent>
+    </>
   );
 };
 

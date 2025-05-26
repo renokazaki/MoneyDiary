@@ -1,10 +1,15 @@
 "use client"
 
-import React, { useState } from "react";
+import React from "react";
 import { CardTitle, CardHeader } from "@/components/ui/card";
 
-const CalenderHeader = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+const CalenderHeader = ({
+  currentDate,
+  setCurrentDate,
+}: {
+  currentDate: Date;
+  setCurrentDate: (date: Date) => void;
+}) => {
   return (
     <CardHeader>
       <div className="flex justify-between items-center mb-2">
